@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research Agent</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #12121a;
+      --bg-tertiary: #1a1a2e;
+      --bg-card: #16162a;
+      --bg-input: #1e1e36;
+      --border: #2a2a4a;
+      --border-focus: #6c63ff;
+      --text-primary: #e8e6f0;
+      --text-secondary: #9994b8;
+      --text-muted: #6b6590;
+      --accent: #6c63ff;
+      --accent-hover: #7f78ff;
+      --accent-glow: rgba(108, 99, 255, 0.15);
+      --success: #34d399;
+      --error: #f87171;
+      --warning: #fbbf24;
+      --gradient-1: linear-gradient(135deg, #6c63ff 0%, #b06cff 100%);
+      --gradient-2: linear-gradient(135deg, #6c63ff 0%, #38bdf8 100%);
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --shadow: 0 4px 24px rgba(0,0,0,0.3);
+      --shadow-lg: 0 8px 48px rgba(0,0,0,0.4);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Background effect */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle at 30% 20%, rgba(108, 99, 255, 0.04) 0%, transparent 50%),
+                  radial-gradient(circle at 70% 80%, rgba(176, 108, 255, 0.03) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .app {
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px 20px 60px;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      padding: 48px 0 40px;
+    }
+
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: var(--accent-glow);
+      border: 1px solid rgba(108, 99, 255, 0.2);
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--accent);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    .header-badge .dot {
+      width: 6px;
+      height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    .header h1 {
+      font-size: 40px;
+      font-weight: 700;
+      letter-spacing: -1px;
+      background: var(--gradient-1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      color: var(--text-secondary);
+      font-size: 16px;
+      max-width: 420px;
+      margin: 0 auto;
+    }
+
+    /* Input section */
+    .input-section {
+      margin-bottom: 32px;
+    }
+
+    .input-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow);
+      transition: border-color 0.3s;
+    }
+
+    .input-card:focus-within {
+      border-color: var(--border-focus);
+      box-shadow: var(--shadow), 0 0 0 3px var(--accent-glow);
+    }
+
+    .input-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 12px;
+    }
+
+    .input-wrapper {
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+    }
+
+    .input-wrapper textarea {
+      flex: 1;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      color: var(--text-primary);
+      font-size: 15px;
+      padding: 14px 16px;
+      resize: none;
+      min-height: 56px;
+      max-height: 160px;
+      font-family: inherit;
+      line-height: 1.5;
+      transition: border-color 0.2s;
+    }
+
+    .input-wrapper textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .input-wrapper textarea::placeholder {
+      color: var(--text-muted);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 28px;
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: var(--gradient-1);
+      color: white;
+      box-shadow: 0 2px 12px rgba(108, 99, 255, 0.3);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 20px rgba(108, 99, 255, 0.4);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* Progress section */
+    .progress-section {
+      display: none;
+      margin-bottom: 32px;
+    }
+
+    .progress-section.visible {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .progress-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .progress-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 20px;
+    }
+
+    .progress-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      color: var(--text-muted);
+      transition: all 0.3s;
+    }
+
+    .step.active {
+      background: var(--accent-glow);
+      color: var(--text-primary);
+    }
+
+    .step.done {
+      color: var(--success);
+    }
+
+    .step.error {
+      color: var(--error);
+    }
+
+    .step-icon {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .step.active .step-icon {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .step-detail {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-left: auto;
+    }
+
+    /* Report section */
+    .report-section {
+      display: none;
+      margin-bottom: 32px;
+    }
+
+    .report-section.visible {
+      display: block;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .report-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+    }
+
+    .report-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(135deg, rgba(108, 99, 255, 0.05) 0%, rgba(176, 108, 255, 0.03) 100%);
+    }
+
+    .report-header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .report-header h3 {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .report-topic {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .report-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-icon {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-icon:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .btn-icon svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .report-body {
+      padding: 28px;
+      font-size: 15px;
+      line-height: 1.75;
+    }
+
+    .report-body h1 {
+      font-size: 24px;
+      font-weight: 700;
+      margin: 28px 0 12px;
+      color: var(--text-primary);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+    }
+
+    .report-body h1:first-child { margin-top: 0; }
+
+    .report-body h2 {
+      font-size: 19px;
+      font-weight: 600;
+      margin: 24px 0 10px;
+      color: var(--text-primary);
+    }
+
+    .report-body h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 20px 0 8px;
+      color: var(--text-primary);
+    }
+
+    .report-body p {
+      margin: 0 0 14px;
+      color: var(--text-primary);
+    }
+
+    .report-body ul, .report-body ol {
+      margin: 0 0 14px;
+      padding-left: 24px;
+    }
+
+    .report-body li {
+      margin-bottom: 6px;
+      color: var(--text-primary);
+    }
+
+    .report-body strong {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    .report-body em {
+      color: var(--text-secondary);
+    }
+
+    .report-body blockquote {
+      border-left: 3px solid var(--accent);
+      padding: 10px 16px;
+      margin: 14px 0;
+      background: var(--accent-glow);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      color: var(--text-secondary);
+    }
+
+    .report-body code {
+      background: var(--bg-input);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+    }
+
+    .report-body pre {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      margin: 14px 0;
+      overflow-x: auto;
+    }
+
+    .report-body pre code {
+      padding: 0;
+      background: none;
+    }
+
+    .report-body hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 24px 0;
+    }
+
+    /* Follow-up section */
+    .followup-section {
+      display: none;
+      margin-bottom: 32px;
+    }
+
+    .followup-section.visible {
+      display: block;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .followup-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .followup-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .followup-header h3 {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .chat-messages {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 16px;
+      max-height: 400px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .chat-messages:empty {
+      display: none;
+    }
+
+    .chat-msg {
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      line-height: 1.6;
+      max-width: 85%;
+      animation: msgIn 0.3s ease;
+    }
+
+    .chat-msg.user {
+      background: var(--accent-glow);
+      border: 1px solid rgba(108, 99, 255, 0.2);
+      align-self: flex-end;
+      color: var(--text-primary);
+    }
+
+    .chat-msg.assistant {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      align-self: flex-start;
+    }
+
+    @keyframes msgIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .followup-input {
+      display: flex;
+      gap: 10px;
+    }
+
+    .followup-input input {
+      flex: 1;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      color: var(--text-primary);
+      font-size: 14px;
+      padding: 12px 16px;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+
+    .followup-input input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .followup-input input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .btn-send {
+      padding: 12px 20px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      color: var(--text-primary);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+
+    .btn-send:hover:not(:disabled) {
+      border-color: var(--accent);
+      background: var(--accent-glow);
+    }
+
+    .btn-send:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* Error */
+    .error-banner {
+      display: none;
+      background: rgba(248, 113, 113, 0.1);
+      border: 1px solid rgba(248, 113, 113, 0.3);
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
+      margin-bottom: 20px;
+      color: var(--error);
+      font-size: 14px;
+    }
+
+    .error-banner.visible {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: fadeIn 0.3s ease;
+    }
+
+    /* New research button */
+    .new-research {
+      text-align: center;
+      margin-top: 16px;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      padding: 10px 20px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 32px 0;
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+
+    .footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+    /* Mobile */
+    @media (max-width: 640px) {
+      .app { padding: 16px 14px 40px; }
+      .header { padding: 32px 0 28px; }
+      .header h1 { font-size: 28px; }
+      .header p { font-size: 14px; }
+      .input-wrapper { flex-direction: column; }
+      .btn-primary { width: 100%; justify-content: center; }
+      .report-body { padding: 20px; font-size: 14px; }
+      .chat-msg { max-width: 92%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-badge">
+        <span class="dot"></span>
+        Powered by Workers AI
+      </div>
+      <h1>Research Agent</h1>
+      <p>AI-powered research assistant running on Cloudflare's edge network</p>
+    </header>
+
+    <!-- Error banner -->
+    <div id="error-banner" class="error-banner">
+      <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd"/></svg>
+      <span id="error-text"></span>
+    </div>
+
+    <!-- Input -->
+    <section class="input-section" id="input-section">
+      <div class="input-card">
+        <label class="input-label">Research Topic</label>
+        <div class="input-wrapper">
+          <textarea
+            id="topic-input"
+            placeholder="Enter a topic to research, e.g. 'The impact of quantum computing on cryptography'"
+            rows="2"
+          ></textarea>
+          <button class="btn btn-primary" id="research-btn" onclick="startResearch()">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z"/></svg>
+            Research
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Progress -->
+    <section class="progress-section" id="progress-section">
+      <div class="progress-card">
+        <div class="progress-title">Research Progress</div>
+        <div class="progress-steps" id="progress-steps"></div>
+      </div>
+    </section>
+
+    <!-- Report -->
+    <section class="report-section" id="report-section">
+      <div class="report-card">
+        <div class="report-header">
+          <div class="report-header-left">
+            <svg viewBox="0 0 20 20" fill="var(--accent)" width="18" height="18"><path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z"/></svg>
+            <div>
+              <h3>Research Report</h3>
+              <div class="report-topic" id="report-topic"></div>
+            </div>
+          </div>
+          <div class="report-actions">
+            <button class="btn-icon" onclick="copyReport()" title="Copy to clipboard">
+              <svg viewBox="0 0 20 20" fill="currentColor"><path d="M7 3.5A1.5 1.5 0 018.5 2h3.879a1.5 1.5 0 011.06.44l3.122 3.12A1.5 1.5 0 0117 6.622V12.5a1.5 1.5 0 01-1.5 1.5h-1v-3.379a3 3 0 00-.879-2.121L10.5 5.379A3 3 0 008.379 4.5H7v-1z"/><path d="M4.5 6A1.5 1.5 0 003 7.5v9A1.5 1.5 0 004.5 18h7a1.5 1.5 0 001.5-1.5v-5.879a1.5 1.5 0 00-.44-1.06L9.44 6.439A1.5 1.5 0 008.378 6H4.5z"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="report-body" id="report-body"></div>
+      </div>
+      <div class="new-research">
+        <button class="btn-ghost" onclick="newResearch()">Start New Research</button>
+      </div>
+    </section>
+
+    <!-- Follow-up -->
+    <section class="followup-section" id="followup-section">
+      <div class="followup-card">
+        <div class="followup-header">
+          <svg viewBox="0 0 20 20" fill="var(--accent)" width="18" height="18"><path fill-rule="evenodd" d="M10 2c-2.236 0-4.43.18-6.57.524C1.993 2.755 1 4.014 1 5.426v5.148c0 1.413.993 2.67 2.43 2.902 1.168.188 2.352.327 3.55.414.28.02.521.18.642.413l1.713 3.293a.75.75 0 001.33 0l1.713-3.293c.121-.233.362-.393.642-.414 1.198-.087 2.382-.226 3.55-.414 1.437-.231 2.43-1.49 2.43-2.902V5.426c0-1.413-.993-2.67-2.43-2.902A41.803 41.803 0 0010 2zM6.75 6a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-6.5zm0 2.5a.75.75 0 000 1.5h3.5a.75.75 0 000-1.5h-3.5z" clip-rule="evenodd"/></svg>
+          <h3>Follow-up Questions</h3>
+        </div>
+        <div class="chat-messages" id="chat-messages"></div>
+        <div class="followup-input">
+          <input
+            type="text"
+            id="followup-input"
+            placeholder="Ask a follow-up question about the research..."
+            onkeydown="if(event.key==='Enter')sendFollowUp()"
+          />
+          <button class="btn-send" id="followup-btn" onclick="sendFollowUp()">Send</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      Built with Cloudflare Workers AI, Durable Objects &amp; Llama 3.3 70B
+    </footer>
+  </div>
+
+<script>
+  // State
+  let sessionId = location.hash.slice(1) || null;
+  let currentReport = '';
+  let isLoading = false;
+
+  // On load, restore session if hash exists
+  if (sessionId) restoreSession();
+
+  function getBaseUrl() {
+    return '';
+  }
+
+  function showError(msg) {
+    const banner = document.getElementById('error-banner');
+    document.getElementById('error-text').textContent = msg;
+    banner.classList.add('visible');
+    setTimeout(() => banner.classList.remove('visible'), 8000);
+  }
+
+  function setProgress(steps) {
+    const container = document.getElementById('progress-steps');
+    container.innerHTML = '';
+    steps.forEach(s => {
+      const div = document.createElement('div');
+      div.className = 'step ' + (s.status || '');
+      div.innerHTML = `
+        <span class="step-icon">${stepIcon(s.status)}</span>
+        <span>${s.label}</span>
+        ${s.detail ? `<span class="step-detail">${s.detail}</span>` : ''}
+      `;
+      container.appendChild(div);
+    });
+  }
+
+  function stepIcon(status) {
+    if (status === 'done') return '<svg viewBox="0 0 20 20" fill="var(--success)" width="18" height="18"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd"/></svg>';
+    if (status === 'active') return '<svg viewBox="0 0 20 20" fill="var(--accent)" width="18" height="18"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-11.25a.75.75 0 00-1.5 0v2.5h-2.5a.75.75 0 000 1.5h2.5v2.5a.75.75 0 001.5 0v-2.5h2.5a.75.75 0 000-1.5h-2.5v-2.5z" clip-rule="evenodd"/></svg>';
+    if (status === 'error') return '<svg viewBox="0 0 20 20" fill="var(--error)" width="18" height="18"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd"/></svg>';
+    return '<svg viewBox="0 0 20 20" fill="var(--text-muted)" width="18" height="18"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12z" clip-rule="evenodd"/></svg>';
+  }
+
+  async function startResearch() {
+    const input = document.getElementById('topic-input');
+    const topic = input.value.trim();
+    if (!topic || isLoading) return;
+
+    isLoading = true;
+    document.getElementById('research-btn').disabled = true;
+
+    // Reset UI
+    document.getElementById('report-section').classList.remove('visible');
+    document.getElementById('followup-section').classList.remove('visible');
+    document.getElementById('chat-messages').innerHTML = '';
+    document.getElementById('progress-section').classList.add('visible');
+
+    // Progress steps
+    const steps = [
+      { label: 'Analyzing topic and generating sub-questions', status: 'active' },
+      { label: 'Researching sub-questions', status: '' },
+      { label: 'Synthesizing final report', status: '' },
+    ];
+    setProgress(steps);
+
+    try {
+      const res = await fetch(getBaseUrl() + '/api/research', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic, sessionId }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Research failed');
+      }
+
+      // Update session
+      sessionId = data.sessionId;
+      location.hash = sessionId;
+      currentReport = data.report;
+
+      // Show completed progress
+      steps[0] = { label: 'Analyzed topic — ' + data.subQuestions.length + ' sub-questions', status: 'done' };
+      steps[1] = { label: 'Researched all sub-questions', status: 'done', detail: data.subQuestions.length + '/' + data.subQuestions.length };
+      steps[2] = { label: 'Report synthesized', status: 'done' };
+      setProgress(steps);
+
+      // Show report
+      setTimeout(() => {
+        document.getElementById('report-topic').textContent = topic;
+        document.getElementById('report-body').innerHTML = renderMarkdown(data.report);
+        document.getElementById('report-section').classList.add('visible');
+        document.getElementById('followup-section').classList.add('visible');
+        document.getElementById('progress-section').classList.remove('visible');
+      }, 600);
+
+    } catch (err) {
+      steps.forEach((s, i) => {
+        if (s.status === 'active') steps[i].status = 'error';
+      });
+      setProgress(steps);
+      showError(err.message);
+    } finally {
+      isLoading = false;
+      document.getElementById('research-btn').disabled = false;
+    }
+  }
+
+  async function sendFollowUp() {
+    const input = document.getElementById('followup-input');
+    const question = input.value.trim();
+    if (!question || !sessionId || isLoading) return;
+
+    isLoading = true;
+    document.getElementById('followup-btn').disabled = true;
+    input.value = '';
+
+    // Add user message
+    addChatMsg('user', question);
+
+    try {
+      const res = await fetch(getBaseUrl() + '/api/followup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question, sessionId }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Follow-up failed');
+
+      addChatMsg('assistant', data.answer);
+    } catch (err) {
+      addChatMsg('assistant', 'Error: ' + err.message);
+    } finally {
+      isLoading = false;
+      document.getElementById('followup-btn').disabled = false;
+      input.focus();
+    }
+  }
+
+  function addChatMsg(role, content) {
+    const container = document.getElementById('chat-messages');
+    const div = document.createElement('div');
+    div.className = 'chat-msg ' + role;
+    div.innerHTML = role === 'assistant' ? renderMarkdown(content) : escapeHtml(content);
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+  }
+
+  async function restoreSession() {
+    try {
+      const res = await fetch(getBaseUrl() + '/api/session/' + sessionId);
+      const data = await res.json();
+
+      if (data.state && data.state.status === 'complete' && data.state.finalReport) {
+        currentReport = data.state.finalReport;
+        document.getElementById('topic-input').value = data.state.topic || '';
+        document.getElementById('report-topic').textContent = data.state.topic || '';
+        document.getElementById('report-body').innerHTML = renderMarkdown(data.state.finalReport);
+        document.getElementById('report-section').classList.add('visible');
+        document.getElementById('followup-section').classList.add('visible');
+
+        // Restore chat messages (skip first research message and report)
+        if (data.messages) {
+          const chatMsgs = data.messages.filter(m =>
+            !(m.role === 'user' && m.content.startsWith('Research topic:')) &&
+            !(m.role === 'assistant' && m.content === data.state.finalReport)
+          );
+          chatMsgs.forEach(m => addChatMsg(m.role, m.content));
+        }
+      }
+    } catch (e) {
+      // Session not found, that's fine
+    }
+  }
+
+  function newResearch() {
+    sessionId = null;
+    location.hash = '';
+    currentReport = '';
+    document.getElementById('topic-input').value = '';
+    document.getElementById('report-section').classList.remove('visible');
+    document.getElementById('followup-section').classList.remove('visible');
+    document.getElementById('progress-section').classList.remove('visible');
+    document.getElementById('chat-messages').innerHTML = '';
+    document.getElementById('topic-input').focus();
+  }
+
+  function copyReport() {
+    if (currentReport) {
+      navigator.clipboard.writeText(currentReport).then(() => {
+        const btn = document.querySelector('.report-actions .btn-icon');
+        btn.style.color = 'var(--success)';
+        btn.style.borderColor = 'var(--success)';
+        setTimeout(() => {
+          btn.style.color = '';
+          btn.style.borderColor = '';
+        }, 2000);
+      });
+    }
+  }
+
+  function escapeHtml(str) {
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  // Simple markdown renderer
+  function renderMarkdown(md) {
+    if (!md) return '';
+    let html = escapeHtml(md);
+
+    // Code blocks
+    html = html.replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>');
+
+    // Inline code
+    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+    // Headers
+    html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+    html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+    html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+
+    // Bold and italic
+    html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+    // Blockquote
+    html = html.replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>');
+
+    // Unordered list
+    html = html.replace(/^[\-\*] (.+)$/gm, '<li>$1</li>');
+    html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+
+    // Fix consecutive li outside ul
+    html = html.replace(/(<\/ul>\s*<li>)/g, '<li>');
+    html = html.replace(/(<\/li>\s*)(?!<li|<\/ul>)/g, '</li></ul>');
+
+    // Horizontal rule
+    html = html.replace(/^---$/gm, '<hr>');
+
+    // Paragraphs — wrap remaining text lines
+    html = html.replace(/^(?!<[hulpbr])(.*\S.*)$/gm, '<p>$1</p>');
+
+    // Clean up
+    html = html.replace(/<p><\/p>/g, '');
+    html = html.replace(/\n{2,}/g, '\n');
+
+    return html;
+  }
+
+  // Auto-resize textarea
+  const textarea = document.getElementById('topic-input');
+  textarea.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 160) + 'px';
+  });
+
+  // Submit on Ctrl+Enter / Cmd+Enter
+  textarea.addEventListener('keydown', function(e) {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+      startResearch();
+    }
+  });
+</script>
+</body>
+</html>
