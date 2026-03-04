@@ -1,6 +1,6 @@
 # CF AI Research Agent
 
-> An AI-powered research assistant that decomposes complex topics, researches each angle independently, and synthesizes comprehensive reports — all running on Cloudflare's edge network.
+> An AI-powered research assistant that decomposes complex topics, researches each angle independently, and synthesizes comprehensive reports — running entirely on Cloudflare's global edge network.
 
 ## Live Demo
 
